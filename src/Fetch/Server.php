@@ -32,7 +32,13 @@ class Server
      *
      * @var array
      */
-    public static $sslFlags = array('ssl', 'validate-cert', 'novalidate-cert', 'tls', 'notls');
+    public static $sslFlags = array(
+        'ssl',
+        'validate-cert',
+        'novalidate-cert',
+        'tls',
+        'notls'
+    );
 
     /**
      * This is used to prevent the class from putting up conflicting tags. Both directions- key to value, value to key-
@@ -40,7 +46,10 @@ class Server
      *
      * @var array
      */
-    public static $exclusiveFlags = array('validate-cert' => 'novalidate-cert', 'tls' => 'notls');
+    public static $exclusiveFlags = array(
+        'validate-cert' => 'novalidate-cert',
+        'tls' => 'notls'
+    );
 
     /**
      * This is the domain or server path the class is connecting to.
@@ -198,6 +207,7 @@ class Server
         }
 
         $this->mailbox = $mailbox;
+
         if (isset($this->imapStream)) {
             $this->setImapStream();
         }
@@ -220,8 +230,9 @@ class Server
      */
     public function setFlag($flag, $value = null)
     {
-        if (!self::$sslEnable && in_array($flag, self::$sslFlags))
+        if (!self::$sslEnable && in_array($flag, self::$sslFlags)) {
             return;
+        }
 
         if (isset(self::$exclusiveFlags[$flag])) {
             $kill = self::$exclusiveFlags[$flag];
@@ -229,15 +240,18 @@ class Server
             $kill = $index;
         }
 
-        if (isset($kill) && false !== $index = array_search($kill, $this->flags))
+        if (isset($kill) && false !== $index = array_search($kill, $this->flags)) {
             unset($this->flags[$index]);
+        }
 
         $index = array_search($flag, $this->flags);
+
         if (isset($value) && $value !== true) {
             if ($value == false && $index !== false) {
                 unset($this->flags[$index]);
             } elseif ($value != false) {
                 $match = preg_grep('/' . $flag . '/', $this->flags);
+
                 if (reset($match)) {
                     $this->flags[key($match)] = $flag . '=' . $value;
                 } else {
@@ -257,8 +271,9 @@ class Server
      */
     public function setOptions($bitmask = 0)
     {
-        if (!is_numeric($bitmask))
+        if (!is_numeric($bitmask)) {
             throw new \RuntimeException('Function requires numeric argument.');
+        }
 
         $this->options = $bitmask;
     }
@@ -281,8 +296,9 @@ class Server
      */
     public function getImapStream()
     {
-        if (empty($this->imapStream))
+        if (!isset($this->imapStream)) {
             $this->setImapStream();
+        }
 
         return $this->imapStream;
     }
@@ -297,8 +313,9 @@ class Server
     {
         $mailboxPath = $this->getServerSpecification();
 
-        if (isset($this->mailbox))
+        if (isset($this->mailbox)) {
             $mailboxPath .= $this->mailbox;
+        }
 
         return $mailboxPath;
     }
@@ -312,11 +329,13 @@ class Server
     {
         $mailboxPath = '{' . $this->serverPath;
 
-        if (isset($this->port))
+        if (isset($this->port)) {
             $mailboxPath .= ':' . $this->port;
+        }
 
-        if ($this->service != 'imap')
+        if ($this->service != 'imap') {
             $mailboxPath .= '/' . $this->service;
+        }
 
         foreach ($this->flags as $flag) {
             $mailboxPath .= '/' . $flag;
@@ -333,14 +352,16 @@ class Server
      */
     protected function setImapStream()
     {
-        if (!empty($this->imapStream)) {
-            if (!imap_reopen($this->imapStream, $this->getServerString(), $this->options, 1))
+        if (isset($this->imapStream)) {
+            if (!imap_reopen($this->imapStream, $this->getServerString(), $this->options, 1)) {
                 throw new \RuntimeException(imap_last_error());
+            }
         } else {
             $imapStream = @imap_open($this->getServerString(), $this->username, $this->password, $this->options, 1, $this->params);
 
-            if ($imapStream === false)
+            if ($imapStream === false) {
                 throw new \RuntimeException(imap_last_error());
+            }
 
             $this->imapStream = $imapStream;
         }
@@ -381,13 +402,15 @@ class Server
     public function search($criteria = 'ALL', $limit = null)
     {
         if ($results = imap_search($this->getImapStream(), $criteria, SE_UID)) {
-            if (isset($limit) && count($results) > $limit)
+            if (isset($limit) && count($results) > $limit) {
                 $results = array_slice($results, 0, $limit);
+            }
 
             $messages = array();
 
-            foreach ($results as $messageId)
+            foreach ($results as $messageId) {
                 $messages[] = new Message($messageId, $this);
+            }
 
             return $messages;
         } else {
@@ -416,16 +439,19 @@ class Server
     {
         $numMessages = $this->numMessages();
 
-        if (isset($limit) && is_numeric($limit) && $limit < $numMessages)
+        if (isset($limit) && is_numeric($limit) && $limit < $numMessages) {
             $numMessages = $limit;
+        }
 
-        if ($numMessages < 1)
+        if ($numMessages < 1) {
             return array();
+        }
 
-        $stream   = $this->getImapStream();
+        $stream = $this->getImapStream();
         $messages = array();
+
         for ($i = 1; $i <= $numMessages; $i++) {
-            $uid        = imap_uid($stream, $i);
+            $uid = imap_uid($stream, $i);
             $messages[] = new Message($uid, $this);
         }
 
