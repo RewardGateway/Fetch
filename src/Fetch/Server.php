@@ -333,7 +333,7 @@ class Server
             $mailboxPath .= ':' . $this->port;
         }
 
-        if ($this->service != 'imap') {
+        if (isset($this->service) && $this->service != 'imap') {
             $mailboxPath .= '/' . $this->service;
         }
 
