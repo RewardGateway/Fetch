@@ -347,7 +347,7 @@ class Message
      */
     public function getRawHeader($name, $forceReload = false)
     {
-        if ($forceReload || !isset($this->rawParsed))
+        if ($forceReload || !isset($this->rawParsed)) {
             $this->rawParsed = array();
             $lastHeader = '';
 
@@ -361,7 +361,7 @@ class Message
                     // Some headers span multiple lines, append to previously parsed header
                     $this->rawParsed[$lastHeader] .= "\n" . trim($header);
                 } else {
-                    list($lastHeader, $value) = explode(':', $header, 2);
+                    list($lastHeader, $value) = @explode(':', $header, 2);
                     $lastHeader = strtolower($lastHeader);
 
                     // append to existing headers instead of overwriting
