@@ -339,10 +339,37 @@ class Message
         return $this->rawHeaders;
     }
 
+    /**
+     * This function parses the raw headers and attempts to return a header value by name
+     * @param  [type]  $name        [description]
+     * @param  boolean $forceReload [description]
+     * @return [type]               [description]
+     */
     public function getRawHeader($name, $forceReload = false)
     {
         if ($forceReload || !isset($this->rawParsed))
-            $this->rawParsed = http_parse_headers($this->getRawHeaders());
+            $this->rawParsed = array();
+            $lastHeader = '';
+
+            foreach (explode("\n", $this->getRawHeaders($forceReload)) as $header) {
+                // skip empty lines
+                if (!isset($header[0])) {
+                    continue;
+                }
+
+                if ($header[0] === "\t") {
+                    // Some headers span multiple lines, append to previously parsed header
+                    $this->rawParsed[$lastHeader] .= "\n" . trim($header);
+                } else {
+                    list($lastHeader, $value) = explode(':', $header, 2);
+
+                    if (isset($this->rawParsed[$lastHeader])) {
+                        $this->rawParsed[$lastHeader] .= "\n" . trim($value);
+                    } else {
+                        $this->rawParsed[$lastHeader] = trim($value);
+                    }
+                }
+            }
         }
 
         if (isset($this->rawParsed[$name])) {
@@ -364,7 +391,7 @@ class Message
     {
         if ($forceReload || !isset($this->headers)) {
             // convert raw header string into a usable object
-            $headerObject = imap_rfc822_parse_headers($this->getRawHeaders());
+            $headerObject = imap_rfc822_parse_headers($this->getRawHeaders($forceReload));
 
             // to keep this object as close as possible to the original header object we add the udate property
             if (isset($headerObject->date)) {
