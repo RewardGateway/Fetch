@@ -45,6 +45,20 @@ class Message
     protected $imapStream;
 
     /**
+     * This as a string which contains raw header for the message.
+     *
+     * @var \stdClass
+     */
+    protected $rawHeaders;
+
+    /**
+     * This as an array which contains parsed raw headers for the message.
+     *
+     * @var \stdClass
+     */
+    protected $rawParsed;
+
+    /**
      * This as an object which contains header information for the message.
      *
      * @var \stdClass
@@ -305,6 +319,35 @@ class Message
     }
 
     /**
+     * This function fetches and caches the raw header string.
+     *
+     * @param  boolean $forceReload
+     * @return string
+     */
+    public function getRawHeaders($forceReload = false)
+    {
+        if ($forceReload || !isset($this->rawHeaders)) {
+            // raw headers (since imap_headerinfo doesn't use the unique id)
+            $this->rawHeaders = imap_fetchheader($this->imapStream, $this->uid, FT_UID);
+        }
+
+        return $this->rawHeaders;
+    }
+
+    public function getRawHeader($name, $forceReload = false)
+    {
+        if ($forceReload || !isset($this->rawParsed))
+            $this->rawParsed = http_parse_headers($this->getRawHeaders());
+        }
+
+        if (isset($this->rawParsed[$name])) {
+            return $this->rawParsed[$name];
+        }
+
+        return false;
+    }
+
+    /**
      * This function returns an object containing the headers of the message. This is done by taking the raw headers
      * and running them through the imap_rfc822_parse_headers function. The results are only retrieved from the server
      * once unless passed true as a parameter.
@@ -315,11 +358,8 @@ class Message
     public function getHeaders($forceReload = false)
     {
         if ($forceReload || !isset($this->headers)) {
-            // raw headers (since imap_headerinfo doesn't use the unique id)
-            $rawHeaders = imap_fetchheader($this->imapStream, $this->uid, FT_UID);
-
             // convert raw header string into a usable object
-            $headerObject = imap_rfc822_parse_headers($rawHeaders);
+            $headerObject = imap_rfc822_parse_headers($this->getRawHeaders());
 
             // to keep this object as close as possible to the original header object we add the udate property
             if (isset($headerObject->date)) {
