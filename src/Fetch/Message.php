@@ -362,7 +362,9 @@ class Message
                     $this->rawParsed[$lastHeader] .= "\n" . trim($header);
                 } else {
                     list($lastHeader, $value) = explode(':', $header, 2);
+                    $lastHeader = strtolower($lastHeader);
 
+                    // append to existing headers instead of overwriting
                     if (isset($this->rawParsed[$lastHeader])) {
                         $this->rawParsed[$lastHeader] .= "\n" . trim($value);
                     } else {
@@ -371,6 +373,9 @@ class Message
                 }
             }
         }
+
+        // use only lowercase indexes
+        $name = strtolower($name);
 
         if (isset($this->rawParsed[$name])) {
             return $this->rawParsed[$name];
