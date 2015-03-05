@@ -656,12 +656,15 @@ class Message
 
         if (is_array($addresses)) {
             foreach ($addresses as $address) {
-                if (property_exists($address, 'mailbox') && $address->mailbox != 'undisclosed-recipients') {
-                    $currentAddress = array();
-                    $currentAddress['address'] = $address->mailbox . '@' . $address->host;
+                if (property_exists($address, 'mailbox')) {
+                    if ($address->mailbox != 'undisclosed-recipients') {
+                        $currentAddress['address'] = $address->mailbox . '@' . $address->host;
 
-                    if (isset($address->personal)) {
-                        $currentAddress['name'] = $address->personal;
+                        if (isset($address->personal)) {
+                            $currentAddress['name'] = $address->personal;
+                        }
+                    } else {
+                        $currentAddress['address'] = $address->mailbox;
                     }
                 }
 
