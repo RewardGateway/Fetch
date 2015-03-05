@@ -353,7 +353,7 @@ class Message
 
             foreach (explode("\n", $this->getRawHeaders($forceReload)) as $header) {
                 // skip empty lines
-                if (!isset($header[0])) {
+                if (trim($header) == false) {
                     continue;
                 }
 
