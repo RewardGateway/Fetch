@@ -83,12 +83,13 @@ class Attachment
      */
     public function __construct(Message $message, $structure, $partIdentifier = null)
     {
-        $this->messageId  = $message->getUid();
+        $this->messageId = $message->getUid();
         $this->imapStream = $message->getImapBox()->getImapStream();
-        $this->structure  = $structure;
+        $this->structure = $structure;
 
-        if (isset($partIdentifier))
+        if (isset($partIdentifier)) {
             $this->partId = $partIdentifier;
+        }
 
         $parameters = Message::getParametersFromStructure($structure);
 
@@ -102,8 +103,9 @@ class Attachment
 
         $this->mimeType = Message::typeIdToString($structure->type);
 
-        if (isset($structure->subtype))
+        if (isset($structure->subtype)) {
             $this->mimeType .= '/' . strtolower($structure->subtype);
+        }
 
         $this->encoding = $structure->encoding;
     }
@@ -122,7 +124,7 @@ class Attachment
                 : imap_body($this->imapStream, $this->messageId, FT_UID);
 
             $messageBody = Message::decode($messageBody, $this->encoding);
-            $this->data  = $messageBody;
+            $this->data = $messageBody;
         }
 
         return $this->data;
@@ -178,8 +180,9 @@ class Attachment
     {
         $path = rtrim($path, '/') . '/';
 
-        if (is_dir($path))
+        if (is_dir($path)) {
             return $this->saveAs($path . $this->getFileName());
+        }
 
         return false;
     }
@@ -193,6 +196,7 @@ class Attachment
     public function saveAs($path)
     {
         $dirname = dirname($path);
+
         if (file_exists($path)) {
             if (!is_writable($path)) {
                 return false;
