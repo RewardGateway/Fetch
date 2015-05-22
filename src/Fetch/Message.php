@@ -356,8 +356,9 @@ class Message
                     // Some headers span multiple lines, append to previously parsed header
                     $this->rawParsed[$lastHeader] .= "\n" . trim($header);
                 } else {
-                    list($lastHeader, $value) = @explode(':', $header, 2);
-                    $lastHeader = strtolower($lastHeader);
+                    $headerParts = @explode(':', $header, 2);
+                    $lastHeader = strtolower($headerParts[0]);
+                    $value = isset($headerParts[1]) ? $headerParts[1] : '';
 
                     // append to existing headers instead of overwriting
                     if (isset($this->rawParsed[$lastHeader])) {
