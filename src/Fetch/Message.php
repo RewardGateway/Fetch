@@ -660,17 +660,19 @@ class Message
      */
     public static function decode($data, $encoding)
     {
+        $encoding = (string) $encoding;
+
         if (!is_numeric($encoding)) {
             $encoding = strtolower($encoding);
         }
 
         switch ($encoding) {
             case 'quoted-printable':
-            case 4:
+            case '4':
                 return quoted_printable_decode($data);
 
             case 'base64':
-            case 3:
+            case '3':
                 return base64_decode($data);
 
             default:
