@@ -308,6 +308,11 @@ class Message
         if ($forceReload || !isset($this->messageOverview)) {
             // returns an array, and since we just want one message we can grab the only result
             $results = imap_fetch_overview($this->imapStream, $this->uid, FT_UID);
+
+            if (sizeof($results) == 0) {
+                throw new \RuntimeException('Error fetching overview');
+            }
+
             $this->messageOverview = array_shift($results);
 
             if (!isset($this->messageOverview->date)) {
@@ -460,6 +465,24 @@ class Message
     }
 
     /**
+     * This function returns the plain text body of the email or false if not present.
+     * @return string|bool Returns false if not present
+     */
+    public function getPlainTextBody()
+    {
+        return isset($this->plaintextMessage) ? $this->plaintextMessage : false;
+    }
+
+    /**
+     * This function returns the HTML body of the email or false if not present.
+     * @return string|bool Returns false if not present
+     */
+    public function getHtmlBody()
+    {
+        return isset($this->htmlMessage) ? $this->htmlMessage : false;
+    }
+
+    /**
      * This function returns either an array of email addresses and names or, optionally, a string that can be used in
      * mail headers.
      *
@@ -566,8 +589,8 @@ class Message
             $this->attachments[] = $attachment;
         } elseif ($structure->type == 0 || $structure->type == 1) {
             $messageBody = isset($partIdentifier) ?
-                imap_fetchbody($this->imapStream, $this->uid, $partIdentifier, FT_UID)
-                : imap_body($this->imapStream, $this->uid, FT_UID);
+                imap_fetchbody($this->imapStream, $this->uid, $partIdentifier, FT_UID | FT_PEEK)
+                : imap_body($this->imapStream, $this->uid, FT_UID | FT_PEEK);
 
             $messageBody = self::decode($messageBody, $structure->encoding);
 
@@ -739,9 +762,8 @@ class Message
                     } else {
                         $currentAddress['address'] = $address->mailbox;
                     }
+                    $outputAddresses[] = $currentAddress;
                 }
-
-                $outputAddresses[] = $currentAddress;
             }
         }
 

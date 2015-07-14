@@ -496,7 +496,19 @@ class Server
      */
     public function hasMailBox($mailbox)
     {
-        return (boolean) imap_getmailboxes(
+        return (boolean) $this->getMailBoxDetails($mailbox);
+    }
+
+    /**
+    * Return information about the mailbox or mailboxes
+    *
+    * @param $mailbox
+    *
+    * @return array
+    */
+    public function getMailBoxDetails($mailbox)
+    {
+        return imap_getmailboxes(
             $this->getImapStream(),
             $this->getServerString(),
             $this->getServerSpecification() . $mailbox
@@ -526,4 +538,16 @@ class Server
     {
         return imap_list($this->getImapStream(), $this->getServerSpecification(), $pattern);
     }
+
+    /**
+     * Deletes the given mailbox.
+     *
+     * @param $mailbox
+     *
+     * @return bool
+     */
+     public function deleteMailBox($mailbox)
+     {
+         return imap_deletemailbox($this->getImapStream(), $this->getServerSpecification() . $mailbox);
+     }
 }
