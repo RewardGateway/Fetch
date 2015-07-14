@@ -162,6 +162,17 @@ class Server
     }
 
     /**
+     * This function checks if the current imap resource is still active
+     * Can be used as a keep-alive against inactivity timeout
+     *
+     * @return bool
+     */
+    public function ping()
+    {
+        return @imap_ping($this->imapStream);
+    }
+
+    /**
      * This function closes the current imap resource and returns an array with any errors on the stack
      *
      * @return false|array
@@ -170,10 +181,11 @@ class Server
     {
         $imapErrors = imap_errors();
 
-        if (isset($this->imapStream)) {
+        if ($this->ping() === true) {
             imap_close($this->imapStream);
-            $this->imapStream = null;
         }
+
+        $this->imapStream = null;
 
         return $imapErrors;
     }
@@ -296,7 +308,7 @@ class Server
      */
     public function getImapStream()
     {
-        if (!isset($this->imapStream)) {
+        if ($this->ping() === false) {
             $this->setImapStream();
         }
 
@@ -352,8 +364,8 @@ class Server
      */
     protected function setImapStream()
     {
-        if (isset($this->imapStream)) {
-            if (!imap_reopen($this->imapStream, $this->getServerString(), $this->options, 1)) {
+        if ($this->ping() === true) {
+            if (imap_reopen($this->imapStream, $this->getServerString(), $this->options, 1) === false) {
                 throw new \RuntimeException(imap_last_error());
             }
         } else {
