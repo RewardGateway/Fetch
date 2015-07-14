@@ -169,7 +169,11 @@ class Server
      */
     public function ping()
     {
-        return @imap_ping($this->imapStream);
+        if (empty($this->imapStream)) {
+            return false;
+        }
+
+        return imap_ping($this->imapStream);
     }
 
     /**
