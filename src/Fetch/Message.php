@@ -755,14 +755,14 @@ class Message
         if (is_array($addresses)) {
             foreach ($addresses as $address) {
                 if (property_exists($address, 'mailbox')) {
-                    if ($address->mailbox != 'undisclosed-recipients') {
+                    if (property_exists($address, 'host') && strtolower($address->mailbox) != 'undisclosed-recipients') {
                         $currentAddress['address'] = $address->mailbox . '@' . $address->host;
 
                         if (isset($address->personal)) {
                             $currentAddress['name'] = MIME::decode($address->personal, self::$charset);
                         }
                     } else {
-                        $currentAddress['address'] = $address->mailbox;
+                        $currentAddress['address'] = strtolower($address->mailbox);
                     }
 
                     $outputAddresses[] = $currentAddress;
