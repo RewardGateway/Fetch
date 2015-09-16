@@ -45,7 +45,7 @@ class Message
     protected $imapStream;
 
     /**
-     * This as a string which contains raw header for the message.
+     * This as a string which contains raw header information for the message.
      *
      * @var \stdClass
      */
@@ -249,7 +249,7 @@ class Message
             return false;
         }
 
-        $this->subject = isset($messageOverview->subject) ? imap_utf8($messageOverview->subject) : null;
+        $this->subject = MIME::decode($messageOverview->subject, self::$charset);
         $this->date = strtotime($messageOverview->date);
         $this->size = $messageOverview->size;
 
@@ -759,11 +759,12 @@ class Message
                         $currentAddress['address'] = $address->mailbox . '@' . $address->host;
 
                         if (isset($address->personal)) {
-                            $currentAddress['name'] = $address->personal;
+                            $currentAddress['name'] = MIME::decode($address->personal, self::$charset);
                         }
                     } else {
                         $currentAddress['address'] = $address->mailbox;
                     }
+
                     $outputAddresses[] = $currentAddress;
                 }
             }
